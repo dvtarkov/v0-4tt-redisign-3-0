@@ -1,0 +1,26 @@
+{
+  "common": {
+    "welcome": "Добро пожаловать",
+    "login": "Войти",
+    "logout": "Выйти",
+    "register": "Регистрация",
+    "username": "Имя пользователя",
+    "password": "Пароль",
+    "email": "Email",
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успешно"
+  },
+  "auth": {
+    "welcome_message": "Добро пожаловать",
+    "login_subtitle": "Войдите в свой аккаунт 4TT",
+    "username_placeholder": "Введите имя пользователя",
+    "password_placeholder": "Введите пароль",
+    "login_button": "Войти",
+    "logging_in": "Вход...",
+    "forgot_password": "Забыли пароль?",
+    "no_account": "Нет аккаунта?",
+    "register_link": "Зарегистрируйтесь",
+    "invalid_credentials": "Неверные данные. Попробуйте снова."
+  }
+}

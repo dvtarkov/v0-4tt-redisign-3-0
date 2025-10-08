@@ -1,0 +1,26 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "username": "Username",
+    "password": "Password",
+    "email": "Email",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "auth": {
+    "welcome_message": "Welcome",
+    "login_subtitle": "Sign in to your 4TT account",
+    "username_placeholder": "Enter username",
+    "password_placeholder": "Enter password",
+    "login_button": "Sign In",
+    "logging_in": "Signing in...",
+    "forgot_password": "Forgot password?",
+    "no_account": "Don't have an account?",
+    "register_link": "Register",
+    "invalid_credentials": "Invalid credentials. Please try again."
+  }
+}
