@@ -1,5 +1,5 @@
 // Token storage abstraction with cookie/localStorage switch
-const AUTH_USE_COOKIES = true // <-- Переключатель между куки и localStorage
+const AUTH_USE_COOKIES = false // <-- Переключатель между куки и localStorage
 
 interface TokenStorage {
   getAccessToken(): string | null
