@@ -7,6 +7,7 @@ import { LanguageSelector } from "@/components/ui/language-selector"
 import { useAuth } from "@/contexts/auth-context"
 import { useLocalization } from "@/contexts/localization-context"
 import { COLORS } from "@/lib/constants"
+import { Menu, X, LogOut } from "lucide-react"
 
 export function Header() {
   const { user, logout } = useAuth()
@@ -42,28 +43,18 @@ export function Header() {
             ))}
           </nav>
 
-          {/* Right side - Language selector and auth */}
-          <div className="flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-4">
             <LanguageSelector />
 
             {user ? (
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={logout}
-                  className="text-red-600 border-red-200 hover:bg-red-50 bg-transparent p-2 cursor-pointer"
-                >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                    />
-                  </svg>
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={logout}
+                className="text-red-600 border-red-200 hover:bg-red-50 bg-transparent p-2 cursor-pointer"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
             ) : (
               <div className="flex items-center space-x-2">
                 <Link href="/login" className="cursor-pointer">
@@ -84,38 +75,36 @@ export function Header() {
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="flex md:hidden items-center space-x-2">
+            <LanguageSelector />
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="cursor-pointer"
+              className="cursor-pointer p-2"
             >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Mobile navigation - now empty but keeping structure */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-gray-50">
-          <div className="px-2 pt-2 pb-3 space-y-1">
+        <div className="md:hidden border-t border-gray-200 bg-white">
+          <div className="px-4 pt-2 pb-3 space-y-2">
             {navigationItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md cursor-pointer"
+                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md cursor-pointer transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {item.label}
               </Link>
             ))}
-            {user && (
-              <div className="border-t border-gray-200 pt-2 mt-2">
+
+            <div className="border-t border-gray-200 pt-3 mt-2 space-y-2">
+              {user ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -123,20 +112,30 @@ export function Header() {
                     logout()
                     setIsMobileMenuOpen(false)
                   }}
-                  className="w-full text-red-600 border-red-200 hover:bg-red-50 bg-transparent cursor-pointer"
+                  className="w-full text-red-600 border-red-200 hover:bg-red-50 bg-transparent cursor-pointer justify-start"
                 >
-                  <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                    />
-                  </svg>
+                  <LogOut className="h-4 w-4 mr-2" />
                   {t("auth.logout", "Logout")}
                 </Button>
-              </div>
-            )}
+              ) : (
+                <div className="space-y-2">
+                  <Link href="/login" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full cursor-pointer bg-transparent">
+                      {t("auth.login", "Login")}
+                    </Button>
+                  </Link>
+                  <Link href="/register" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button
+                      size="sm"
+                      style={{ backgroundColor: COLORS.main }}
+                      className="w-full text-white hover:opacity-90 cursor-pointer"
+                    >
+                      {t("auth.register", "Register")}
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
