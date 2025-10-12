@@ -16,6 +16,8 @@ interface LocalizationContextType {
 
 const LocalizationContext = createContext<LocalizationContextType | undefined>(undefined)
 
+const LANGUAGE_STORAGE_KEY = "preferred_language"
+
 export function LocalizationProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<SupportedLanguage>("en")
   const [translations, setTranslations] = useState<LocalizationData>({})
@@ -39,40 +41,72 @@ export function LocalizationProvider({ children }: { children: React.ReactNode }
     }
   }
 
-  const getCurrentLanguage = async () => {
+  const getCurrentLanguage = async (): Promise<SupportedLanguage> => {
+    // First, check localStorage for saved preference
+    if (typeof window !== "undefined") {
+      const savedLang = localStorage.getItem(LANGUAGE_STORAGE_KEY) as SupportedLanguage | null
+      if (savedLang && ["en", "ru"].includes(savedLang)) {
+        console.log(`[v0] Using saved language preference: ${savedLang}`)
+        return savedLang
+      }
+    }
+
+    // Try to get language from server
     try {
+      console.log("[v0] Fetching current language from server")
       const response = await apiClient.get<I18nResponse>("api/user/i18n/current/")
       if (response.data?.django_language) {
-        return response.data.django_language
+        const serverLang = response.data.django_language
+        console.log(`[v0] Server language: ${serverLang}`)
+        return serverLang
       }
     } catch (error) {
-      console.error("Failed to get current language:", error)
+      console.error("[v0] Failed to get current language from server:", error)
     }
 
-    // Fallback to browser language or default
+    // Fallback to browser language
     if (typeof navigator !== "undefined") {
       const browserLang = navigator.language.split("-")[0] as SupportedLanguage
-      return ["en", "ru"].includes(browserLang) ? browserLang : "en"
+      const detectedLang = ["en", "ru"].includes(browserLang) ? browserLang : "en"
+      console.log(`[v0] Using browser language: ${detectedLang}`)
+      return detectedLang
     }
 
+    console.log("[v0] Using default language: en")
     return "en"
   }
 
   const setLanguage = async (lang: SupportedLanguage) => {
+    console.log(`[v0] Changing language to: ${lang}`)
     setLoading(true)
-    try {
-      // Update language on server
-      await apiClient.post("api/user/i18n/set-language/", {
-        language: lang,
-      })
 
-      // Update local state
+    try {
+      // Save to localStorage immediately for instant persistence
+      if (typeof window !== "undefined") {
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, lang)
+        console.log(`[v0] Saved language preference to localStorage: ${lang}`)
+      }
+
+      // Update local state first for immediate UI feedback
       setLanguageState(lang)
 
       // Load new translations
       await loadTranslations(lang)
+
+      // Try to update language on server (non-blocking)
+      try {
+        console.log(`[v0] Updating language on server: ${lang}`)
+        await apiClient.post("api/user/i18n/set-language/", {
+          language: lang,
+        })
+        console.log("[v0] Successfully updated language on server")
+      } catch (serverError) {
+        // Server update failed, but we already saved locally, so it's okay
+        console.warn("[v0] Failed to update language on server (continuing with local change):", serverError)
+      }
     } catch (error) {
-      console.error("Failed to set language:", error)
+      console.error("[v0] Failed to set language:", error)
+      throw error // Re-throw so the UI can show an error
     } finally {
       setLoading(false)
     }
@@ -95,9 +129,10 @@ export function LocalizationProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     const initLocalization = async () => {
+      console.log("[v0] Initializing localization")
       setLoading(true)
 
-      // Get current language from server
+      // Get current language (checks localStorage, server, then browser)
       const currentLang = await getCurrentLanguage()
       setLanguageState(currentLang)
 
@@ -105,6 +140,7 @@ export function LocalizationProvider({ children }: { children: React.ReactNode }
       await loadTranslations(currentLang)
 
       setLoading(false)
+      console.log("[v0] Localization initialized")
     }
 
     initLocalization()
