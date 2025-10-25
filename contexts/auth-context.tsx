@@ -46,10 +46,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await apiClient.post("api/user/auth/login/", credentials)
 
       if (response.data) {
-        console.log("[v0] Login API successful, received tokens")
-        if (response.data.access && response.data.refresh) {
+        console.log("[v0] Login API successful")
+        // In localStorage mode, we need to store tokens manually
+        if (!AUTH_USE_COOKIES && response.data.access && response.data.refresh) {
           tokenStorage.setTokens(response.data.access, response.data.refresh)
-          console.log("[v0] Tokens stored successfully")
+          console.log("[v0] Tokens stored in localStorage")
+        } else {
+          console.log("[v0] Tokens set by backend in HttpOnly cookies")
         }
 
         // Fetch user data
@@ -88,12 +91,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
+      // In localStorage mode, send refresh token
       const refreshToken = tokenStorage.getRefreshToken()
-      if (refreshToken) {
-        await apiClient.post("api/user/auth/logout/", {
-          refresh: refreshToken,
-        })
-      }
+      const body = AUTH_USE_COOKIES ? {} : { refresh: refreshToken }
+
+      await apiClient.post("api/user/auth/logout/", body)
     } catch (error) {
       console.error("Logout API call failed:", error)
       // Continue with local cleanup even if API call fails
@@ -112,11 +114,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initAuth = async () => {
       setLoading(true)
 
-      const hasTokens = tokenStorage.hasTokens()
-      console.log(`[v0] Tokens found: ${hasTokens}`)
+      // In localStorage mode, only fetch if tokens exist
+      const shouldFetchUser = AUTH_USE_COOKIES || tokenStorage.hasTokens()
+      console.log(`[v0] Should fetch user: ${shouldFetchUser}`)
 
-      if (hasTokens) {
-        // If tokens exist, try to fetch user data
+      if (shouldFetchUser) {
+        // If tokens exist (or cookie mode), try to fetch user data
         await refreshUser()
       }
 
