@@ -1,5 +1,5 @@
 // Universal API client for 4TT application
-import { tokenStorage, AUTH_USE_COOKIES } from "./token-storage"
+import { tokenStorage } from "./token-storage"
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_API || "https://4tt.org/"
 
@@ -21,12 +21,9 @@ class ApiClient {
       "Content-Type": "application/json",
     }
 
-    // In cookie mode, browser sends HttpOnly cookies automatically
-    if (!AUTH_USE_COOKIES) {
-      const accessToken = tokenStorage.getAccessToken()
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`
-      }
+    const accessToken = tokenStorage.getAccessToken()
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}`
     }
 
     return headers
@@ -36,9 +33,7 @@ class ApiClient {
     try {
       const refreshToken = tokenStorage.getRefreshToken()
 
-      const body = AUTH_USE_COOKIES ? {} : { refresh: refreshToken }
-
-      if (!AUTH_USE_COOKIES && !refreshToken) {
+      if (!refreshToken) {
         return false
       }
 
@@ -47,15 +42,12 @@ class ApiClient {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // Send cookies with request
-        body: JSON.stringify(body),
+        body: JSON.stringify({ refresh: refreshToken }),
       })
 
       if (response.ok) {
         const data = await response.json()
-        if (!AUTH_USE_COOKIES) {
-          tokenStorage.setTokens(data.access, data.refresh || refreshToken)
-        }
+        tokenStorage.setTokens(data.access, data.refresh || refreshToken)
         return true
       }
     } catch (error) {
@@ -84,7 +76,6 @@ class ApiClient {
       console.log(`[v0] API: Making request to ${endpoint}`)
       const response = await fetch(url, {
         ...options,
-        credentials: "include", // Always send cookies with requests
         headers: {
           ...headers,
           ...options.headers,
