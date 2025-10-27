@@ -405,7 +405,7 @@ export function ServerDetails({ serverUrl }: ServerDetailsProps) {
   const isButtonDisabled = actionLoading !== null || ["stopping", "starting"].includes(server.status)
 
   const activationLink = server.activation_slug
-    ? `${process.env.NEXT_PUBLIC_BACKEND_API || "https://4tt.org"}/activate/${serverUrl}/${server.activation_slug}`
+    ? `${process.env.NEXT_PUBLIC_BACKEND_API || "https://4tt.org/"}activate/${serverUrl}/${server.activation_slug}`
     : null
 
   return (
